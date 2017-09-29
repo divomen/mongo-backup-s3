@@ -4,35 +4,26 @@ set -e
 
 : ${MONGO_HOST:?}
 : ${MONGO_DB:?}
+: ${MONGO_USER:?}
+: ${MONGO_PASSWORD:?}
 : ${S3_BUCKET:?}
 : ${AWS_ACCESS_KEY_ID:?}
 : ${AWS_SECRET_ACCESS_KEY:?}
 : ${DATE_FORMAT:?}
 : ${FILE_PREFIX:?}
 
-FOLDER=/backup
-DUMP_OUT=dump
+FILE_NAME=$(date -u +${DATE_FORMAT}).gz
 
-FILE_NAME=${FILE_PREFIX}$(date -u +${DATE_FORMAT}).tar.gz
+echo "[$(date)] Starting backup..."
 
-echo "Creating backup folder..."
+mongodump --username=${MONGO_USER} --password=${MONGO_PASSWORD} --host=${MONGO_HOST} --db=${MONGO_DB} --gzip --archive=${FILE_NAME}
 
-rm -fr ${FOLDER} && mkdir -p ${FOLDER} && cd ${FOLDER}
+echo "[$(date)] Uploading to S3..."
 
-echo "Starting backup..."
+aws s3api put-object --bucket ${S3_BUCKET} --key ${FILE_PREFIX}${FILE_NAME} --body ${FILE_NAME}
 
-mongodump --host=${MONGO_HOST} --db=${MONGO_DB} --out=${DUMP_OUT}
-
-echo "Compressing backup..."
-
-tar -zcvf ${FILE_NAME} ${DUMP_OUT} && rm -fr ${DUMP_OUT}
-
-echo "Uploading to S3..."
-
-aws s3api put-object --bucket ${S3_BUCKET} --key ${FILE_NAME} --body ${FILE_NAME}
-
-echo "Removing backup file..."
+echo "[$(date)] Removing backup file..."
 
 rm -f ${FILE_NAME}
 
-echo "Done!"
+echo "[$(date)] Done!"
