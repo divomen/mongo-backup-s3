@@ -7,6 +7,7 @@ set -e
 : ${MONGO_USER:?}
 : ${MONGO_PASSWORD:?}
 : ${S3_BUCKET:?}
+: ${S3_GRANTS:?}
 : ${AWS_ACCESS_KEY_ID:?}
 : ${AWS_SECRET_ACCESS_KEY:?}
 : ${DATE_FORMAT:?}
@@ -20,7 +21,7 @@ mongodump --username=${MONGO_USER} --password=${MONGO_PASSWORD} --host=${MONGO_H
 
 echo "[$(date)] Uploading to S3..."
 
-aws s3api put-object --bucket ${S3_BUCKET} --key ${FILE_PREFIX}${FILE_NAME} --body ${FILE_NAME}
+aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${FILE_PREFIX}${FILE_NAME} --grants ${S3_GRANTS}
 
 echo "[$(date)] Removing backup file..."
 
