@@ -22,6 +22,7 @@ TIME_FORMAT = "%H:%M"
 
 
 def catch_exceptions(job_func):
+    # noinspection PyBroadException
     @functools.wraps(job_func)
     def wrapper(*args, **kwargs):
         try:
