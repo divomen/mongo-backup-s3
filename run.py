@@ -13,6 +13,7 @@ import functools
 import traceback
 import os
 
+# noinspection PyUnresolvedReferences
 import schedule
 
 BACKUP_SCRIPT_PATH = "/app/backup.sh"
